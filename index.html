@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة أسعار البقالة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'arabic': ['Tahoma', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap');
+        * {
+            font-family: 'Noto Sans Arabic', 'Tahoma', 'Arial', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen font-arabic">
+    <!-- Dark mode detection -->
+    <script>
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+
+    <div class="container mx-auto px-4 py-6 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                🏪 إدارة أسعار البقالة
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                أضف المنتجات وأسعارها وابحث عنها بسهولة
+            </p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex bg-white dark:bg-gray-800 rounded-lg shadow-md mb-6 overflow-hidden">
+            <button id="addTab" class="flex-1 py-3 px-4 text-center font-medium bg-blue-600 text-white transition-colors">
+                ➕ إضافة منتج
+            </button>
+            <button id="searchTab" class="flex-1 py-3 px-4 text-center font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                🔍 البحث
+            </button>
+        </div>
+
+        <!-- Add Product Panel -->
+        <div id="addPanel" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">إضافة منتج جديد</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        اسم المنتج
+                    </label>
+                    <input 
+                        type="text" 
+                        id="productName" 
+                        placeholder="مثال: أرز أبيض"
+                        class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    >
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        السعر (ريال)
+                    </label>
+                    <input 
+                        type="number" 
+                        id="productPrice" 
+                        placeholder="0.00"
+                        step="0.01"
+                        min="0"
+                        class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    >
+                </div>
+                
+                <button 
+                    id="addProductBtn" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                    إضافة المنتج
+                </button>
+            </div>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-lg">
+                ✅ تم إضافة المنتج بنجاح!
+            </div>
+        </div>
+
+        <!-- Search Panel -->
+        <div id="searchPanel" class="hidden space-y-6">
+            <!-- Search Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">البحث عن منتج</h2>
+                
+                <div class="mb-4">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="ابحث عن المنتج..."
+                        class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    >
+                </div>
+
+                <!-- Search Results -->
+                <div id="searchResults" class="space-y-3">
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        اكتب اسم المنتج للبحث عنه
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bill Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">🧾 الفاتورة</h2>
+                    <button 
+                        id="clearBillBtn" 
+                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                        مسح الكل
+                    </button>
+                </div>
+
+                <!-- Bill Items -->
+                <div id="billItems" class="space-y-2 mb-4">
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        لم تتم إضافة أي منتجات للفاتورة بعد
+                    </div>
+                </div>
+
+                <!-- Total -->
+                <div class="border-t border-gray-200 dark:border-gray-600 pt-4">
+                    <div class="flex justify-between items-center text-lg font-bold">
+                        <span class="text-gray-900 dark:text-white">المجموع الكلي:</span>
+                        <span id="totalAmount" class="text-green-600 dark:text-green-400">0.00 ر.س</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products List -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">جميع المنتجات</h2>
+            <div id="productsList" class="space-y-3">
+                <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                    لا توجد منتجات مضافة بعد
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product storage with localStorage for permanent saving
+        let products = {};
+        let billItems = {}; // Store bill items with quantities
+
+        // Load products from localStorage on page load
+        function loadProducts() {
+            try {
+                const savedProducts = localStorage.getItem('groceryProducts');
+                if (savedProducts) {
+                    products = JSON.parse(savedProducts);
+                }
+            } catch (error) {
+                console.log('Error loading products:', error);
+                products = {};
+            }
+        }
+
+        // Save products to localStorage
+        function saveProducts() {
+            try {
+                localStorage.setItem('groceryProducts', JSON.stringify(products));
+            } catch (error) {
+                console.log('Error saving products:', error);
+            }
+        }
+
+        // DOM elements
+        const addTab = document.getElementById('addTab');
+        const searchTab = document.getElementById('searchTab');
+        const addPanel = document.getElementById('addPanel');
+        const searchPanel = document.getElementById('searchPanel');
+        const productName = document.getElementById('productName');
+        const productPrice = document.getElementById('productPrice');
+        const addProductBtn = document.getElementById('addProductBtn');
+        const successMessage = document.getElementById('successMessage');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const productsList = document.getElementById('productsList');
+
+        // Tab switching
+        addTab.addEventListener('click', () => {
+            addTab.className = 'flex-1 py-3 px-4 text-center font-medium bg-blue-600 text-white transition-colors';
+            searchTab.className = 'flex-1 py-3 px-4 text-center font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors';
+            addPanel.classList.remove('hidden');
+            searchPanel.classList.add('hidden');
+        });
+
+        searchTab.addEventListener('click', () => {
+            searchTab.className = 'flex-1 py-3 px-4 text-center font-medium bg-blue-600 text-white transition-colors';
+            addTab.className = 'flex-1 py-3 px-4 text-center font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors';
+            searchPanel.classList.remove('hidden');
+            addPanel.classList.add('hidden');
+        });
+
+        // Add product function
+        function addProduct() {
+            const name = productName.value.trim();
+            const price = parseFloat(productPrice.value);
+
+            if (!name) {
+                showCustomAlert('يرجى إدخال اسم المنتج');
+                return;
+            }
+
+            if (isNaN(price) || price < 0) {
+                showCustomAlert('يرجى إدخال سعر صحيح');
+                return;
+            }
+
+            // Add product to storage
+            products[name.toLowerCase()] = {
+                name: name,
+                price: price
+            };
+
+            // Save to localStorage
+            saveProducts();
+
+            // Clear form
+            productName.value = '';
+            productPrice.value = '';
+
+            // Show success message
+            successMessage.classList.remove('hidden');
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 3000);
+
+            // Update products list
+            updateProductsList();
+        }
+
+        // Enhanced search function with smart filtering
+        function searchProduct(query) {
+            if (!query.trim()) {
+                searchResults.innerHTML = `
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        اكتب اسم المنتج للبحث عنه
+                    </div>
+                `;
+                return;
+            }
+
+            const searchTerm = query.toLowerCase();
+            const allProducts = Object.values(products);
+            
+            // Smart search with priority ranking
+            const results = allProducts.map(product => {
+                const productName = product.name.toLowerCase();
+                let score = 0;
+                let matchType = '';
+
+                // Exact match (highest priority)
+                if (productName === searchTerm) {
+                    score = 100;
+                    matchType = 'exact';
+                }
+                // Starts with (high priority)
+                else if (productName.startsWith(searchTerm)) {
+                    score = 90;
+                    matchType = 'starts';
+                }
+                // Contains the search term (medium priority)
+                else if (productName.includes(searchTerm)) {
+                    score = 70;
+                    matchType = 'contains';
+                }
+                // Word starts with search term (medium-low priority)
+                else if (productName.split(' ').some(word => word.startsWith(searchTerm))) {
+                    score = 60;
+                    matchType = 'word_starts';
+                }
+                // Similar characters (low priority)
+                else {
+                    // Check if all characters of search term exist in product name
+                    let tempProductName = productName;
+                    let found = true;
+                    for (let char of searchTerm) {
+                        const index = tempProductName.indexOf(char);
+                        if (index === -1) {
+                            found = false;
+                            break;
+                        }
+                        tempProductName = tempProductName.substring(index + 1);
+                    }
+                    if (found && searchTerm.length > 1) {
+                        score = 30;
+                        matchType = 'similar';
+                    }
+                }
+
+                return score > 0 ? { ...product, score, matchType } : null;
+            }).filter(Boolean);
+
+            // Sort by score (highest first)
+            results.sort((a, b) => b.score - a.score);
+
+            if (results.length === 0) {
+                searchResults.innerHTML = `
+                    <div class="text-center text-red-500 dark:text-red-400 py-8">
+                        ❌ لم يتم العثور على منتجات تحتوي على "${query}"
+                        <div class="text-sm mt-2 text-gray-500 dark:text-gray-400">
+                            جرب كتابة حروف أخرى أو اسم مختلف
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show count of results
+            const countMessage = results.length === 1 ? 
+                'تم العثور على منتج واحد' : 
+                `تم العثور على ${results.length} منتجات`;
+
+            searchResults.innerHTML = `
+                <div class="text-sm text-blue-600 dark:text-blue-400 mb-3 font-medium">
+                    🔍 ${countMessage} للبحث "${query}"
+                </div>
+                ${results.map(product => {
+                    // Highlight the search term in product name
+                    const highlightedName = highlightSearchTerm(product.name, query);
+                    
+                    // Add match type indicator
+                    const matchIndicator = getMatchIndicator(product.matchType);
+                    
+                    return `
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border-r-4 border-green-500 fade-in">
+                            <div class="flex justify-between items-center">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="font-semibold text-gray-900 dark:text-white text-lg">${highlightedName}</h3>
+                                        ${matchIndicator}
+                                    </div>
+                                    <span class="text-xl font-bold text-green-600 dark:text-green-400">${product.price.toFixed(2)} ر.س</span>
+                                </div>
+                                <button 
+                                    onclick="addToBill('${product.name.toLowerCase()}')" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl px-4 py-2 rounded-lg ml-4 transition-colors"
+                                    title="إضافة للفاتورة"
+                                >
+                                    ➕
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
+
+        // Highlight search term in product name
+        function highlightSearchTerm(productName, searchTerm) {
+            if (!searchTerm.trim()) return productName;
+            
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return productName.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">$1</mark>');
+        }
+
+        // Get match type indicator
+        function getMatchIndicator(matchType) {
+            const indicators = {
+                'exact': '<span class="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 px-2 py-1 rounded-full">تطابق تام</span>',
+                'starts': '<span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">يبدأ بـ</span>',
+                'contains': '<span class="text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 px-2 py-1 rounded-full">يحتوي على</span>',
+                'word_starts': '<span class="text-xs bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-300 px-2 py-1 rounded-full">كلمة تبدأ بـ</span>',
+                'similar': '<span class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-full">متشابه</span>'
+            };
+            return indicators[matchType] || '';
+        }
+
+        // Update products list
+        function updateProductsList() {
+            if (Object.keys(products).length === 0) {
+                productsList.innerHTML = `
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        لا توجد منتجات مضافة بعد
+                    </div>
+                `;
+                return;
+            }
+
+            productsList.innerHTML = Object.values(products).map(product => `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg flex justify-between items-center fade-in">
+                    <span class="font-medium text-gray-900 dark:text-white">${product.name}</span>
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="font-bold text-blue-600 dark:text-blue-400">${product.price.toFixed(2)} ر.س</span>
+                        <button onclick="deleteProduct('${product.name.toLowerCase()}')" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
+                            🗑️ حذف
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete product function
+        function deleteProduct(productKey) {
+            showConfirmDialog('هل تريد حذف هذا المنتج؟', () => {
+                delete products[productKey];
+                saveProducts(); // Save after deletion
+                updateProductsList();
+                // Clear search if the deleted product was in results
+                if (searchInput.value.trim()) {
+                    searchProduct(searchInput.value);
+                }
+            });
+        }
+
+        // Custom alert function
+        function showCustomAlert(message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                    <p class="text-gray-700 dark:text-gray-300 mb-4 text-center">${message}</p>
+                    <div class="flex justify-center">
+                        <button class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg" onclick="this.closest('.fixed').remove()">حسناً</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Custom confirm dialog
+        function showConfirmDialog(message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                    <p class="text-gray-700 dark:text-gray-300 mb-4 text-center">${message}</p>
+                    <div class="flex justify-center space-x-3 space-x-reverse">
+                        <button class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600" onclick="this.closest('.fixed').remove()">إلغاء</button>
+                        <button class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded-lg" onclick="this.closest('.fixed').remove(); (${onConfirm})()">تأكيد</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Event listeners
+        addProductBtn.addEventListener('click', addProduct);
+
+        // Enter key support for forms
+        productName.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                productPrice.focus();
+            }
+        });
+
+        productPrice.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addProduct();
+            }
+        });
+
+        // Real-time search
+        searchInput.addEventListener('input', (e) => {
+            searchProduct(e.target.value);
+        });
+
+        // Add to bill function
+        function addToBill(productKey) {
+            const product = products[productKey];
+            if (!product) return;
+
+            if (billItems[productKey]) {
+                billItems[productKey].quantity += 1;
+            } else {
+                billItems[productKey] = {
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1
+                };
+            }
+
+            updateBill();
+        }
+
+        // Remove from bill function
+        function removeFromBill(productKey) {
+            if (billItems[productKey]) {
+                if (billItems[productKey].quantity > 1) {
+                    billItems[productKey].quantity -= 1;
+                } else {
+                    delete billItems[productKey];
+                }
+            }
+            updateBill();
+        }
+
+        // Update bill display
+        function updateBill() {
+            const billItemsDiv = document.getElementById('billItems');
+            const totalAmountSpan = document.getElementById('totalAmount');
+
+            if (Object.keys(billItems).length === 0) {
+                billItemsDiv.innerHTML = `
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                        لم تتم إضافة أي منتجات للفاتورة بعد
+                    </div>
+                `;
+                totalAmountSpan.textContent = '0.00 ر.س';
+                return;
+            }
+
+            let total = 0;
+            billItemsDiv.innerHTML = Object.entries(billItems).map(([key, item]) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                return `
+                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg flex justify-between items-center fade-in">
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900 dark:text-white">${item.name}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                                ${item.price.toFixed(2)} ر.س × ${item.quantity} = ${itemTotal.toFixed(2)} ر.س
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <button 
+                                onclick="addToBill('${key}')" 
+                                class="bg-green-500 hover:bg-green-600 text-white font-bold px-2 py-1 rounded text-sm"
+                                title="زيادة"
+                            >
+                                ➕
+                            </button>
+                            <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-sm font-bold">
+                                ${item.quantity}
+                            </span>
+                            <button 
+                                onclick="removeFromBill('${key}')" 
+                                class="bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 rounded text-sm"
+                                title="تقليل أو حذف"
+                            >
+                                ➖
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalAmountSpan.textContent = `${total.toFixed(2)} ر.س`;
+        }
+
+        // Clear bill function
+        function clearBill() {
+            showConfirmDialog('هل تريد مسح جميع المنتجات من الفاتورة؟', () => {
+                billItems = {};
+                updateBill();
+            });
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', () => {
+            loadProducts(); // Load saved products
+            updateProductsList(); // Update the display
+            updateBill(); // Initialize bill display
+            productName.focus();
+
+            // Add event listener for clear bill button
+            document.getElementById('clearBillBtn').addEventListener('click', clearBill);
+        });
+    </script>
+</body>
+</html>
